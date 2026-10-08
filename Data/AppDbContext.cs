@@ -2,8 +2,7 @@ using HealthcarePortalApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace HealthcarePortal.API.Data;
-
+namespace HealthcarePortalApi.Data;
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) 
@@ -27,7 +26,6 @@ public class ApplicationDbContext : DbContext
             .IsRequired();
         modelBuilder.Entity<User>()
             .Property(p=>p.PasswordHash)
-            .HasMaxLength(20)
             .IsRequired();
     }
 }
