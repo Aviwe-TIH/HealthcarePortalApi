@@ -40,6 +40,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<HealthcarePortalApi.Services.AuthService>();
+builder.Services.AddScoped<HealthcarePortalApi.Services.IPatientService, HealthcarePortalApi.Services.PatientService>();
 
 builder.Services.AddAuthentication(options =>
 {
