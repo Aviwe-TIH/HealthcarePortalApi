@@ -4,6 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using HealthcarePortalApi.Data;
+using HealthcarePortalApi.Services;
+using HealthcarePortalApi.Exception;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,8 +41,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<HealthcarePortalApi.Services.AuthService>();
-builder.Services.AddScoped<HealthcarePortalApi.Services.IPatientService, HealthcarePortalApi.Services.PatientService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IAccessRequestService, AccessRequestService>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails(); // Required for the standardized error format
 
 builder.Services.AddAuthentication(options =>
 {
@@ -63,6 +68,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.UseSwagger();
 app.UseSwaggerUI();

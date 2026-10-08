@@ -12,14 +12,8 @@ public interface IPatientService
     Task<object?> SearchPatientByNationalIdAsync(string nationalId, Guid doctorId);
 }
 
-public class PatientService : IPatientService
+public class PatientService(ApplicationDbContext _context) : IPatientService
 {
-    private readonly ApplicationDbContext _context;
-
-    public PatientService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
 
     public async Task<Patient> CreatePatientAsync(CreatePatientDto dto, Guid doctorId)
     {
@@ -77,7 +71,6 @@ public class PatientService : IPatientService
 
         if (hasApprovedAccess) return patient;
 
-        // Otherwise, mask the data
         return new 
         {
             patient.Id,
