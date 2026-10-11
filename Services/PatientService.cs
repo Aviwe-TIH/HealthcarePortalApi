@@ -10,6 +10,10 @@ public interface IPatientService
     Task<List<Patient>> GetPatientsByDoctorIdAsync(Guid doctorId);
     Task<(Patient? Patient, bool IsForbidden)> GetPatientByIdAsync(Guid id, Guid doctorId);
     Task<object?> SearchPatientByNationalIdAsync(string nationalId, Guid doctorId);
+
+    Task<bool> UpdatePatientAsync(Guid patientId, Guid doctorId, UpdatePatientDto dto);
+    Task<bool> DeletePatientAsync(Guid id, Guid doctorId);
+    Task<List<Patient>> CreateMultiplePatientsAsync(IEnumerable<CreatePatientDto> dtos, Guid doctorId);
 }
 
 public class PatientService(ApplicationDbContext _context) : IPatientService
@@ -82,5 +86,59 @@ public class PatientService(ApplicationDbContext _context) : IPatientService
             MedicalHistory = "HIDDEN - Request permission from the assigned doctor to view.",
             patient.CreatedAt
         };
+    }
+
+    public async Task<bool> UpdatePatientAsync(Guid patientId, Guid doctorId, UpdatePatientDto dto)
+{
+    // 1. Get the patient (EF Core starts tracking it)
+    var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == patientId);
+    
+    if (patient is null) return false;
+
+    // 2. Strict Security: Only the assigned doctor can edit this record
+    if (patient.DoctorId != doctorId) throw new UnauthorizedAccessException("You do not own this patient record.");
+
+    // 3. Update the existing tracked object using the DTO
+    patient.FirstName = dto.FirstName;
+    patient.LastName = dto.LastName;
+    patient.MedicalHistory = dto.MedicalHistory;
+    patient.DateOfBirth = dto.DateOfBirth;
+
+    // 4. Save changes (No need to call _context.Update, EF Core already knows it changed)
+    await _context.SaveChangesAsync();
+
+    return true;
+}
+
+    public async Task<bool> DeletePatientAsync(Guid id, Guid doctorId)
+    {
+        var patientToDelete = await _context.Patients.FirstOrDefaultAsync(p=> p.Id == id);
+        if(patientToDelete is null) return false;
+
+        if (patientToDelete.DoctorId != doctorId) throw new UnauthorizedAccessException("You do not own this patient record.");
+
+
+        _context.Remove(patientToDelete);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<List<Patient>> CreateMultiplePatientsAsync(IEnumerable<CreatePatientDto> dtos, Guid doctorId)
+    {
+        var patients = dtos.Select(dto => new Patient
+        {
+            DoctorId = doctorId,
+            NationalId = dto.NationalId,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            DateOfBirth = dto.DateOfBirth,
+            MedicalHistory = dto.MedicalHistory
+        }).ToList();
+
+        // AddRange tracks the entire list at once
+        _context.Patients.AddRange(patients);
+        await _context.SaveChangesAsync();
+
+        return patients;
     }
 }

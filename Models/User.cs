@@ -1,7 +1,7 @@
 namespace HealthcarePortalApi.Models;
 
 public enum Role{doctor}
-public class User
+public class User: IAuditable
 {
     public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
@@ -10,4 +10,8 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Patient> Patients { get; set; } = new List<Patient>();
+}
+
+public interface IAuditable
+{
 }

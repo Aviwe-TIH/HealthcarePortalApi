@@ -9,14 +9,8 @@ namespace HealthcarePortalApi.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class PatientsController : ControllerBase
+public class PatientsController(IPatientService _patientService) : ControllerBase
 {
-    private readonly IPatientService _patientService;
-
-    public PatientsController(IPatientService patientService)
-    {
-        _patientService = patientService;
-    }
 
     private Guid GetCurrentDoctorId()
     {
@@ -66,5 +60,38 @@ public class PatientsController : ControllerBase
             return NotFound(new { Message = "Patient not found." });
 
         return Ok(result);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult> UpdatePatient(Guid id, [FromBody] UpdatePatientDto dto)
+    {
+        if (dto is null) return BadRequest();
+
+        var doctorId = GetCurrentDoctorId();
+        
+        var success = await _patientService.UpdatePatientAsync(id, doctorId, dto);
+        
+        return success ? NoContent() : NotFound();
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult> DeletePatient(Guid id)
+    {
+        var doctorId = GetCurrentDoctorId();
+        var success = await _patientService.DeletePatientAsync(id, doctorId);
+        
+        return success ? NoContent() : NotFound();
+    }
+
+    [HttpPost("bulk")]
+    public async Task<IActionResult> AddMultiplePatients([FromBody] List<CreatePatientDto> dtos)
+    {
+        if (dtos == null || !dtos.Any()) 
+            return BadRequest(new { Message = "Patient list cannot be empty." });
+
+        var doctorId = GetCurrentDoctorId();
+        var patients = await _patientService.CreateMultiplePatientsAsync(dtos, doctorId);
+
+        return Ok(patients);
     }
 }

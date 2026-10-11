@@ -1,6 +1,6 @@
 namespace HealthcarePortalApi.Models;
 
-public class Patient
+public class Patient: IAuditable
 {
     public Guid Id { get; set; }
     

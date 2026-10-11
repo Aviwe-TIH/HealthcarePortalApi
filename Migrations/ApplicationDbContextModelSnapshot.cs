@@ -46,7 +46,44 @@ namespace HealthcarePortalApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OwningDoctorId");
+
+                    b.HasIndex("PatientId");
+
+                    b.HasIndex("RequestingDoctorId");
+
                     b.ToTable("AccessRequests");
+                });
+
+            modelBuilder.Entity("HealthcarePortalApi.Models.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TableName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("HealthcarePortalApi.Models.Patient", b =>
@@ -115,12 +152,33 @@ namespace HealthcarePortalApi.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("HealthcarePortalApi.Models.AccessRequest", b =>
+                {
+                    b.HasOne("HealthcarePortalApi.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("OwningDoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HealthcarePortalApi.Models.Patient", null)
+                        .WithMany()
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HealthcarePortalApi.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("RequestingDoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HealthcarePortalApi.Models.Patient", b =>
                 {
                     b.HasOne("HealthcarePortalApi.Models.User", "Doctor")
                         .WithMany("Patients")
                         .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Doctor");
