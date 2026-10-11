@@ -1,25 +1,17 @@
-using System;
-using System.ComponentModel.DataAnnotations;
-
 namespace HealthcarePortalApi.Models;
 
-
-public enum Role
+public enum Role{doctor}
+public class User: IAuditable
 {
-    doctor,patient
-}
-public class User
-{
-    public Guid Id { get; set; } = Guid.NewGuid();
-
-    [EmailAddress]
+    public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
-
-    [DataType(DataType.Password)]
-    [MinLength(8)]
     public string PasswordHash { get; set; } = string.Empty;
-    
-    public Role Role { get; set; } = Role.doctor; // Defaulting to Doctor for practice
-    
+    public Role Role { get; set; } = Role.doctor;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<Patient> Patients { get; set; } = new List<Patient>();
+}
+
+public interface IAuditable
+{
 }

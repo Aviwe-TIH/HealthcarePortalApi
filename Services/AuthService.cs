@@ -7,6 +7,7 @@ using HealthcarePortalApi.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
+
 namespace HealthcarePortalApi.Services;
 
 public class AuthService(ApplicationDbContext _context, IConfiguration _config)
