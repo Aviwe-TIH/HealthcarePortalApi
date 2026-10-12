@@ -7,7 +7,7 @@ namespace HealthcarePortalApi.Services;
 public interface IPatientService
 {
     Task<Patient> CreatePatientAsync(CreatePatientDto dto, Guid doctorId);
-    Task<List<Patient>> GetPatientsByDoctorIdAsync(Guid doctorId);
+    Task<PagedResponse<Patient>> GetPatientsByDoctorIdAsync(Guid doctorId, int pageNumber, int pageSize);
     Task<(Patient? Patient, bool IsForbidden)> GetPatientByIdAsync(Guid id, Guid doctorId);
     Task<object?> SearchPatientByNationalIdAsync(string nationalId, Guid doctorId);
 
@@ -37,12 +37,33 @@ public class PatientService(ApplicationDbContext _context) : IPatientService
         return patient;
     }
 
-    public async Task<List<Patient>> GetPatientsByDoctorIdAsync(Guid doctorId)
+    public async Task<PagedResponse<Patient>> GetPatientsByDoctorIdAsync(Guid doctorId, int pageNumber, int pageSize)
+{
+    // 1. Build the base query (does not hit the DB yet)
+    var query = _context.Patients.Where(p => p.DoctorId == doctorId);
+
+    // 2. Count the total records for this specific doctor
+    var totalRecords = await query.CountAsync();
+
+    // 3. Fetch only the specific page of data
+    var patients = await query
+        .OrderByDescending(p => p.CreatedAt) // Newest patients first
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+
+    // 4. Calculate total pages and return
+    var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+    return new PagedResponse<Patient>
     {
-        return await _context.Patients
-            .Where(p => p.DoctorId == doctorId)
-            .ToListAsync();
-    }
+        Data = patients,
+        PageNumber = pageNumber,
+        PageSize = pageSize,
+        TotalRecords = totalRecords,
+        TotalPages = totalPages
+    };
+}
 
     public async Task<(Patient? Patient, bool IsForbidden)> GetPatientByIdAsync(Guid id, Guid doctorId)
     {
