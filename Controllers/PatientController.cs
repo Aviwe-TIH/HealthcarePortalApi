@@ -30,12 +30,20 @@ public class PatientsController(IPatientService _patientService) : ControllerBas
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetMyPatients()
+    public async Task<IActionResult> GetMyPatients(
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 10)
     {
-        var doctorId = GetCurrentDoctorId();
-        var patients = await _patientService.GetPatientsByDoctorIdAsync(doctorId);
+        // Safeguards
+        if (pageNumber < 1) pageNumber = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 50) pageSize = 50; // Max 50 records per request
 
-        return Ok(patients);
+        var doctorId = GetCurrentDoctorId();
+        
+        var pagedResult = await _patientService.GetPatientsByDoctorIdAsync(doctorId, pageNumber, pageSize);
+
+        return Ok(pagedResult);
     }
 
     [HttpGet("{id}")]
