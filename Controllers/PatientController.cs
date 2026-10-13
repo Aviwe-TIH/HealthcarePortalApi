@@ -94,7 +94,7 @@ public class PatientsController(IPatientService _patientService) : ControllerBas
     [HttpPost("bulk")]
     public async Task<IActionResult> AddMultiplePatients([FromBody] List<CreatePatientDto> dtos)
     {
-        if (dtos == null || !dtos.Any()) 
+        if (dtos == null || dtos.Count == 0) 
             return BadRequest(new { Message = "Patient list cannot be empty." });
 
         var doctorId = GetCurrentDoctorId();

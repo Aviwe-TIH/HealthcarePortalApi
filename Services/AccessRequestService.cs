@@ -11,14 +11,8 @@ public interface IAccessRequestService
     Task<(bool Success, string Message)> ApproveRequestAsync(Guid requestId, Guid doctorId);
 }
 
-public class AccessRequestService : IAccessRequestService
+public class AccessRequestService(ApplicationDbContext _context) : IAccessRequestService
 {
-    private readonly ApplicationDbContext _context;
-
-    public AccessRequestService(ApplicationDbContext context)
-    {
-        _context = context;
-    }
 
     public async Task<(bool Success, string Message)> RequestAccessAsync(Guid patientId, Guid requestingDoctorId)
     {

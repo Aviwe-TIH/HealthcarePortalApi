@@ -8,15 +8,8 @@ namespace HealthcarePortalApi.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class AccessRequestsController : ControllerBase
+public class AccessRequestsController(IAccessRequestService _accessRequestService) : ControllerBase
 {
-    private readonly IAccessRequestService _accessRequestService;
-
-    public AccessRequestsController(IAccessRequestService accessRequestService)
-    {
-        _accessRequestService = accessRequestService;
-    }
-
     private Guid GetCurrentDoctorId()
     {
         var doctorId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 

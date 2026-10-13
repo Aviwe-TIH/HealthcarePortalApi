@@ -15,7 +15,7 @@ public class AuthController(AuthService _authService): ControllerBase
         var result = await _authService.RegisterAsync(dto);
         
         if (result == null)
-            return BadRequest(new { Message = "User with this email already exists." });
+            return BadRequest("User with this email already exists.");
 
         return Ok(result);
     }
@@ -24,10 +24,9 @@ public class AuthController(AuthService _authService): ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         var result = await _authService.LoginAsync(dto);
-        
-        if (result == null)
-            return Unauthorized(new { Message = "Invalid email or password." });
 
+        if (result == null)
+            return Unauthorized("Invalid email or password.");
         return Ok(result);
     }
 }
